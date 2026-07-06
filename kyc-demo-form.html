@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KYC Application Form – Demo</title>
+  <style>
+    /* ── Reset & Base ────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* ── Banner ──────────────────────────────────────────── */
+    .demo-banner {
+      background: #d32f2f;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Container ───────────────────────────────────────── */
+    .form-wrapper {
+      max-width: 920px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.1);
+      overflow: hidden;
+    }
+
+    .form-header {
+      background: #1565c0;
+      color: #fff;
+      padding: 24px 32px;
+    }
+    .form-header h1 { font-size: 1.6rem; }
+    .form-header p  { font-size: 0.9rem; opacity: .85; margin-top: 4px; }
+
+    /* ── Sections ────────────────────────────────────────── */
+    .section {
+      padding: 24px 32px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1565c0;
+      margin-bottom: 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #1565c0;
+      display: inline-block;
+    }
+
+    .risk-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .risk-tag.high     { background: #ffcdd2; color: #c62828; }
+    .risk-tag.unnecessary { background: #fff3e0; color: #e65100; }
+
+    /* ── Grid ────────────────────────────────────────────── */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 24px;
+    }
+    .field-grid .full { grid-column: 1 / -1; }
+
+    @media (max-width: 640px) {
+      .field-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Field ────────────────────────────────────────────── */
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .field label .req {
+      color: #d32f2f;
+      margin-left: 2px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #bdbdbd;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      transition: border-color .2s;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: #1565c0;
+      box-shadow: 0 0 0 3px rgba(21,101,192,.15);
+    }
+
+    .field .error-msg {
+      color: #d32f2f;
+      font-size: 0.78rem;
+      margin-top: 3px;
+      display: none;
+    }
+    .field.has-error input,
+    .field.has-error select,
+    .field.has-error textarea {
+      border-color: #d32f2f;
+    }
+    .field.has-error .error-msg { display: block; }
+
+    .field .hint {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Radio / Checkbox Groups ─────────────────────────── */
+    .radio-group, .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .radio-group label, .checkbox-group label {
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .form-actions {
+      padding: 24px 32px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      background: #fafafa;
+    }
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary { background: #1565c0; color: #fff; }
+    .btn-primary:hover { background: #0d47a1; }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .btn-secondary:hover { background: #bdbdbd; }
+
+    /* ── Toast ────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all .3s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #2e7d32; }
+    .toast.error   { background: #c62828; }
+
+    /* ── Declaration ─────────────────────────────────────── */
+    .declaration-box {
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ██ DEMO WARNING BANNER ██ -->
+<div class="demo-banner">
+  ⚠ DEMO / TEST FORM — NOT FOR PRODUCTION USE — This form intentionally contains problematic fields for agent analysis ⚠
+</div>
+
+<div class="form-wrapper">
+  <!-- Header -->
+  <div class="form-header">
+    <h1>Know Your Customer (KYC) Application Form</h1>
+    <p>For Individuals Only &bull; All fields marked <strong>*</strong> are mandatory</p>
+  </div>
+
+  <form id="kycForm" novalidate>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 1 – IDENTITY DETAILS
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">1. Identity Details</div>
+      <div class="field-grid">
+        <!-- PAN -->
+        <div class="field">
+          <label>PAN Number <span class="req">*</span></label>
+          <input type="text" name="pan" required maxlength="10"
+                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" placeholder="ABCDE1234F" />
+          <div class="error-msg">Valid PAN required (e.g. ABCDE1234F)</div>
+        </div>
+        <!-- Application Type -->
+        <div class="field">
+          <label>Application Type <span class="req">*</span></label>
+          <select name="applicationType" required>
+            <option value="">-- Select --</option>
+            <option value="new">New</option>
+            <option value="update">Update</option>
+          </select>
+          <div class="error-msg">Please select an option</div>
+        </div>
+        <!-- Prefix -->
+        <div class="field">
+          <label>Prefix <span class="req">*</span></label>
+          <select name="prefix" required>
+            <option value="">-- Select --</option>
+            <option>Mr.</option><option>Ms.</option><option>Mrs.</option><option>Dr.</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- First Name -->
+        <div class="field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" name="firstName" required placeholder="First Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Middle Name -->
+        <div class="field">
+          <label>Middle Name <span class="req">*</span></label>
+          <input type="text" name="middleName" required placeholder="Middle Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Last Name -->
+        <div class="field">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" name="lastName" required placeholder="Last Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Maiden Name -->
+        <div class="field">
+          <label>Maiden Name (if any) <span class="req">*</span></label>
+          <input type="text" name="maidenName" required placeholder="Maiden Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Father / Spouse Name -->
+        <div class="field">
+          <label>Father / Spouse Name <span class="req">*</span></label>
+          <input type="text" name="fatherSpouseName" required placeholder="Full Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Mother's Name -->
+        <div class="field">
+          <label>Mother's Name <span class="req">*</span></label>
+          <input type="text" name="motherName" required placeholder="Mother's Full Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Date of Birth -->
+        <div class="field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input type="date" name="dob" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Gender -->
+        <div class="field">
+          <label>Gender <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="gender" value="Male" required /> Male</label>
+            <label><input type="radio" name="gender" value="Female" /> Female</label>
+            <label><input type="radio" name="gender" value="Transgender" /> Transgender</label>
+          </div>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Marital Status -->
+        <div class="field">
+          <label>Marital Status <span class="req">*</span></label>
+          <select name="maritalStatus" required>
+            <option value="">-- Select --</option>
+            <option>Single</option><option>Married</option><option>Unmarried</option><option>Others</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Citizenship -->
+        <div class="field">
+          <label>Citizenship <span class="req">*</span></label>
+          <select name="citizenship" required>
+            <option value="">-- Select --</option>
+            <option value="IN">Indian</option>
+            <option value="other">Others</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Residential Status -->
+        <div class="field">
+          <label>Residential Status <span class="req">*</span></label>
+          <select name="residentialStatus" required>
+            <option value="">-- Select --</option>
+            <option>Resident Individual</option>
+            <option>Non Resident Indian</option>
+            <option>Foreign National</option>
+            <option>Person of Indian Origin</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Occupation -->
+        <div class="field">
+          <label>Occupation Type <span class="req">*</span></label>
+          <select name="occupation" required>
+            <option value="">-- Select --</option>
+            <option>Service</option><option>Private Sector</option><option>Public Sector</option>
+            <option>Government Sector</option><option>Professional</option><option>Self Employed</option>
+            <option>Retired</option><option>Housewife</option><option>Student</option>
+            <option>Business</option><option>Others</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Designation -->
+        <div class="field">
+          <label>Designation <span class="req">*</span></label>
+          <input type="text" name="designation" required placeholder="e.g. Manager" />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 2 – PROOF OF IDENTITY (PoI)
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">2. Proof of Identity (PoI)</div>
+      <div class="field-grid">
+        <!-- ID Type -->
+        <div class="field">
+          <label>Identity Document Type <span class="req">*</span></label>
+          <select name="idDocType" required>
+            <option value="">-- Select --</option>
+            <option>Passport</option>
+            <option>Voter ID Card</option>
+            <option>PAN Card</option>
+            <option>Driving Licence</option>
+            <option>Aadhaar Card</option>
+            <option>NREGA Job Card</option>
+            <option>Others</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- ID Number -->
+        <div class="field">
+          <label>Identification Number <span class="req">*</span></label>
+          <input type="text" name="idNumber" required placeholder="Document ID Number" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Passport Number -->
+        <div class="field">
+          <label>Passport Number <span class="req">*</span></label>
+          <input type="text" name="passportNumber" required placeholder="A1234567" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Passport Expiry -->
+        <div class="field">
+          <label>Passport Expiry Date <span class="req">*</span></label>
+          <input type="date" name="passportExpiry" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Aadhaar -->
+        <div class="field">
+          <label>Aadhaar Number <span class="req">*</span></label>
+          <input type="text" name="aadhaar" required maxlength="12"
+                 pattern="[0-9]{12}" placeholder="123456789012" />
+          <div class="error-msg">12-digit Aadhaar required</div>
+        </div>
+        <!-- DL Number -->
+        <div class="field">
+          <label>Driving Licence Number <span class="req">*</span></label>
+          <input type="text" name="drivingLicence" required placeholder="DL-XXXXXXXXXX" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- DL Expiry -->
+        <div class="field">
+          <label>Driving Licence Expiry Date <span class="req">*</span></label>
+          <input type="date" name="dlExpiry" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Upload PoI -->
+        <div class="field full">
+          <label>Upload Proof of Identity (scan/photo) <span class="req">*</span></label>
+          <input type="file" name="poiUpload" accept=".jpg,.jpeg,.png,.pdf" required />
+          <div class="hint">Accepted: JPG, PNG, PDF (max 5 MB)</div>
+          <div class="error-msg">File upload required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 3 – PROOF OF ADDRESS (PoA)
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">3. Proof of Address (PoA)</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Address Type <span class="req">*</span></label>
+          <div class="radio-group">
+            <label><input type="radio" name="addressType" value="Residential" required /> Residential</label>
+            <label><input type="radio" name="addressType" value="Business" /> Business</label>
+            <label><input type="radio" name="addressType" value="Registered Office" /> Registered Office</label>
+          </div>
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Address Document Type <span class="req">*</span></label>
+          <select name="addressDocType" required>
+            <option value="">-- Select --</option>
+            <option>Passport</option><option>Voter ID</option><option>Driving Licence</option>
+            <option>Aadhaar Card</option><option>Utility Bill</option><option>Bank Statement</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Address Lines -->
+        <div class="field full">
+          <label>Address Line 1 <span class="req">*</span></label>
+          <input type="text" name="addressLine1" required placeholder="Flat / House / Building" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field full">
+          <label>Address Line 2 <span class="req">*</span></label>
+          <input type="text" name="addressLine2" required placeholder="Street / Road / Lane" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>City / Town / Village <span class="req">*</span></label>
+          <input type="text" name="city" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>District <span class="req">*</span></label>
+          <input type="text" name="district" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>State / UT <span class="req">*</span></label>
+          <input type="text" name="state" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Zip / Post Code <span class="req">*</span></label>
+          <input type="text" name="pincode" required pattern="[0-9]{6}" maxlength="6" placeholder="600001" />
+          <div class="error-msg">6-digit PIN required</div>
+        </div>
+        <div class="field">
+          <label>Country <span class="req">*</span></label>
+          <input type="text" name="country" required value="India" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Country Code (ISO 3166) <span class="req">*</span></label>
+          <input type="text" name="countryCode" required value="IN" maxlength="3" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- Upload PoA -->
+        <div class="field full">
+          <label>Upload Proof of Address (scan/photo) <span class="req">*</span></label>
+          <input type="file" name="poaUpload" accept=".jpg,.jpeg,.png,.pdf" required />
+          <div class="hint">Accepted: JPG, PNG, PDF (max 5 MB)</div>
+          <div class="error-msg">File upload required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 4 – CONTACT DETAILS
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">4. Contact Details</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Email ID <span class="req">*</span></label>
+          <input type="email" name="email" required placeholder="email@example.com" />
+          <div class="error-msg">Valid email required</div>
+        </div>
+        <div class="field">
+          <label>Mobile Number <span class="req">*</span></label>
+          <input type="tel" name="mobile" required pattern="[0-9]{10}" maxlength="10" placeholder="9876543210" />
+          <div class="error-msg">10-digit mobile required</div>
+        </div>
+        <div class="field">
+          <label>Telephone (Office) <span class="req">*</span></label>
+          <input type="tel" name="telOffice" required placeholder="STD-Number" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Telephone (Residence) <span class="req">*</span></label>
+          <input type="tel" name="telResidence" required placeholder="STD-Number" />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 5 – FATCA / CRS INFORMATION
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">5. FATCA / CRS Information</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Country of Jurisdiction of Residence <span class="req">*</span></label>
+          <input type="text" name="fatcaCountry" required placeholder="Country" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Tax Identification Number (TIN) <span class="req">*</span></label>
+          <input type="text" name="tin" required placeholder="TIN / SSN" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Place / City of Birth <span class="req">*</span></label>
+          <input type="text" name="birthPlace" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Country of Birth <span class="req">*</span></label>
+          <input type="text" name="birthCountry" required />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 6 – RELATED PERSON DETAILS
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">6. Details of Related Person</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Related Person Type <span class="req">*</span></label>
+          <select name="relatedPersonType" required>
+            <option value="">-- Select --</option>
+            <option>Related Person</option>
+            <option>Guardian of Minor</option>
+            <option>Assignee</option>
+            <option>Authorized Representative</option>
+          </select>
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Related Person Name <span class="req">*</span></label>
+          <input type="text" name="relatedPersonName" required placeholder="Full Name" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>KYC Number of Related Person <span class="req">*</span></label>
+          <input type="text" name="relatedPersonKYC" required placeholder="KYC Number" />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 7 – PHOTO & DOCUMENT UPLOADS
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">7. Photograph &amp; Signature</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Recent Passport-size Photograph <span class="req">*</span></label>
+          <input type="file" name="photograph" accept=".jpg,.jpeg,.png" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Signature / Thumb Impression <span class="req">*</span></label>
+          <input type="file" name="signature" accept=".jpg,.jpeg,.png" required />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 8 – ⚠️ POTENTIALLY RISKY FIELDS
+         (Intentionally included for agent detection)
+         ═══════════════════════════════════════════════════ -->
+    <div class="section" style="background:#fff8e1;">
+      <div class="section-title">
+        8. Additional Verification
+        <span class="risk-tag high">High Risk Fields</span>
+      </div>
+      <div class="field-grid">
+        <!-- PASSWORD — should NOT be in a KYC form -->
+        <div class="field">
+          <label>Account Password <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="password" name="password" required minlength="8"
+                 placeholder="Enter password" />
+          <div class="error-msg">Required (min 8 characters)</div>
+        </div>
+        <!-- CONFIRM PASSWORD -->
+        <div class="field">
+          <label>Confirm Password <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="password" name="confirmPassword" required minlength="8"
+                 placeholder="Re-enter password" />
+          <div class="error-msg">Passwords must match</div>
+        </div>
+        <!-- BIOMETRIC — fingerprint upload -->
+        <div class="field">
+          <label>Fingerprint Scan Upload <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="file" name="fingerprintScan" accept=".jpg,.png,.bmp,.wsq" required />
+          <div class="hint">Upload fingerprint biometric image</div>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- BIOMETRIC — iris scan -->
+        <div class="field">
+          <label>Iris Scan Upload <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="file" name="irisScan" accept=".jpg,.png,.bmp" required />
+          <div class="hint">Upload iris biometric image</div>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- BIOMETRIC — facial recognition -->
+        <div class="field full">
+          <label>Live Facial Recognition Photo <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="file" name="facialPhoto" accept=".jpg,.jpeg,.png" required />
+          <div class="hint">Used for facial recognition matching</div>
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- MOTHER'S MAIDEN NAME — common security question, risky to collect -->
+        <div class="field">
+          <label>Mother's Maiden Name <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="text" name="motherMaidenName" required placeholder="Security answer" />
+          <div class="error-msg">Required</div>
+        </div>
+        <!-- PIN -->
+        <div class="field">
+          <label>ATM / Transaction PIN <span class="req">*</span>
+            <span class="risk-tag high">Risk</span>
+          </label>
+          <input type="password" name="atmPin" required maxlength="6"
+                 pattern="[0-9]{4,6}" placeholder="4-6 digit PIN" />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 9 – ⚠️ UNNECESSARY FIELDS
+         (Intentionally included for agent detection)
+         ═══════════════════════════════════════════════════ -->
+    <div class="section" style="background:#f3e5f5;">
+      <div class="section-title">
+        9. Social &amp; Supplementary Information
+        <span class="risk-tag unnecessary">Unnecessary</span>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Facebook Profile URL <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="url" name="facebook" required placeholder="https://facebook.com/yourprofile" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Twitter / X Handle <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="text" name="twitter" required placeholder="@handle" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Instagram Handle <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="text" name="instagram" required placeholder="@handle" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>LinkedIn Profile URL <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="url" name="linkedin" required placeholder="https://linkedin.com/in/yourname" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Personal Blog / Website <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="url" name="personalWebsite" required placeholder="https://..." />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Favourite Colour <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="text" name="favouriteColour" required placeholder="e.g. Blue" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Political Affiliation <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="text" name="politicalAffiliation" required placeholder="Party / None" />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Religious Belief <span class="req">*</span>
+            <span class="risk-tag unnecessary">Unnecessary</span>
+          </label>
+          <input type="text" name="religion" required />
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 10 – REMARKS
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">10. Remarks</div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>Additional Remarks <span class="req">*</span></label>
+          <textarea name="remarks" rows="3" required placeholder="Any additional information..."></textarea>
+          <div class="error-msg">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION 11 – DECLARATION
+         ═══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">11. Applicant Declaration</div>
+      <div class="declaration-box">
+        I hereby declare that the details furnished above are true and correct to the best of my
+        knowledge and belief. I undertake to inform you of any changes therein, immediately. In case
+        any of the above information is found to be false or untrue or misleading or misrepresenting,
+        I am aware that I may be held liable for it.
+      </div>
+      <br />
+      <div class="field-grid">
+        <div class="field">
+          <label>Place <span class="req">*</span></label>
+          <input type="text" name="declarationPlace" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field">
+          <label>Date <span class="req">*</span></label>
+          <input type="date" name="declarationDate" required />
+          <div class="error-msg">Required</div>
+        </div>
+        <div class="field full">
+          <label>
+            <input type="checkbox" name="declarationAccepted" required />
+            I agree to the above declaration <span class="req">*</span>
+          </label>
+          <div class="error-msg">You must accept the declaration</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         ACTIONS
+         ═══════════════════════════════════════════════════ -->
+    <div class="form-actions">
+      <button type="reset" class="btn btn-secondary">Reset</button>
+      <button type="submit" class="btn btn-primary">Submit KYC Application</button>
+    </div>
+
+  </form>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CLIENT-SIDE VALIDATION & SIMULATED SUBMISSION
+     ═══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  const SUBMIT_ENDPOINT = 'https://example.com/api/kyc-submit';
+
+  const form  = document.getElementById('kycForm');
+  const toast = document.getElementById('toast');
+
+  /* ── Show toast ─────────────────────────────────────── */
+  function showToast(message, type) {
+    toast.textContent = message;
+    toast.className   = 'toast ' + type + ' show';
+    setTimeout(function () { toast.classList.remove('show'); }, 4000);
+  }
+
+  /* ── Clear all field errors ─────────────────────────── */
+  function clearErrors() {
+    form.querySelectorAll('.field.has-error').forEach(function (f) {
+      f.classList.remove('has-error');
+    });
+  }
+
+  /* ── Validate a single field wrapper ────────────────── */
+  function validateField(fieldDiv) {
+    var control = fieldDiv.querySelector('input, select, textarea');
+    if (!control) return true;
+
+    // Radio / checkbox groups
+    if (control.type === 'radio') {
+      var name    = control.name;
+      var checked = form.querySelector('input[name="' + name + '"]:checked');
+      if (!checked) { fieldDiv.classList.add('has-error'); return false; }
+      fieldDiv.classList.remove('has-error');
+      return true;
+    }
+    if (control.type === 'checkbox') {
+      if (!control.checked) { fieldDiv.classList.add('has-error'); return false; }
+      fieldDiv.classList.remove('has-error');
+      return true;
+    }
+
+    // Standard inputs
+    if (!control.checkValidity() || (control.required && !control.value.trim())) {
+      fieldDiv.classList.add('has-error');
+      return false;
+    }
+    fieldDiv.classList.remove('has-error');
+    return true;
+  }
+
+  /* ── Password-match check ───────────────────────────── */
+  function passwordsMatch() {
+    var pw  = form.querySelector('[name="password"]');
+    var cpw = form.querySelector('[name="confirmPassword"]');
+    if (pw && cpw && pw.value !== cpw.value) {
+      cpw.closest('.field').classList.add('has-error');
+      return false;
+    }
+    return true;
+  }
+
+  /* ── Validate entire form ───────────────────────────── */
+  function validateAll() {
+    clearErrors();
+    var valid = true;
+    form.querySelectorAll('.field').forEach(function (f) {
+      if (!validateField(f)) valid = false;
+    });
+    if (!passwordsMatch()) valid = false;
+    return valid;
+  }
+
+  /* ── Collect form data as plain object ──────────────── */
+  function collectData() {
+    var data = {};
+    var fd   = new FormData(form);
+    fd.forEach(function (value, key) {
+      // Skip file inputs for the JSON payload — just note their names
+      if (value instanceof File && value.name) {
+        data[key] = '[File: ' + value.name + ' (' + value.size + ' bytes)]';
+      } else {
+        data[key] = value;
+      }
+    });
+    // Mask sensitive fields in the logged payload
+    if (data.password)        data.password        = '••••••••';
+    if (data.confirmPassword) data.confirmPassword = '••••••••';
+    if (data.atmPin)          data.atmPin          = '••••';
+    return data;
+  }
+
+  /* ── Simulate POST to third-party endpoint ──────────── */
+  function simulateSubmission(payload) {
+    console.group('%c[KYC Demo] Simulated POST → ' + SUBMIT_ENDPOINT, 'color:#1565c0;font-weight:bold');
+    console.log('Method : POST');
+    console.log('Headers: Content-Type: application/json');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    console.groupEnd();
+
+    // Simulate network delay
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        resolve({ status: 200, message: 'KYC application received successfully (simulated).' });
+      }, 1200);
+    });
+  }
+
+  /* ── Submit handler ─────────────────────────────────── */
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!validateAll()) {
+      showToast('Please fill in all required fields correctly.', 'error');
+      // Scroll to first error
+      var firstErr = form.querySelector('.field.has-error');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    var payload = collectData();
+
+    // Disable submit button while "sending"
+    var submitBtn = form.querySelector('[type="submit"]');
+    submitBtn.disabled  = true;
+    submitBtn.textContent = 'Submitting…';
+
+    simulateSubmission(payload).then(function (resp) {
+      console.log('[KYC Demo] Server Response (simulated):', resp);
+      showToast(resp.message, 'success');
+      submitBtn.disabled  = false;
+      submitBtn.textContent = 'Submit KYC Application';
+    });
+  });
+
+  /* ── Live field validation on blur ──────────────────── */
+  form.querySelectorAll('input, select, textarea').forEach(function (el) {
+    el.addEventListener('blur', function () {
+      var fieldDiv = el.closest('.field');
+      if (fieldDiv) validateField(fieldDiv);
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
