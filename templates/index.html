@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--
+  index.html — Vulnerable frontend template
+  ==========================================
+  A2  — No privacy policy link; no consent checkbox before PI collection
+  A3  — No cookie consent banner (OneTrust / Cookiebot / custom)
+  A4  — Mixpanel / Amplitude analytics script loads unconditionally
+  A5  — novalidate on registration form; typed inputs lack pattern/required
+  A6  — Insecure HTTP mixed content
+  A11 — POST form without CSRF token; no Content-Security-Policy
+  B1  — No emergency help / crisis reporting link
+  B4  — No "Report content / Abuse" link
+  B6  — No Terms of Service link
+  B8  — No CAPTCHA on public registration form
+  B11 — No age verification (18+ gate)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VulnApp — Home</title>
+
+  <!-- A4: Mixpanel loads unconditionally — no consent gate -->
+  <script src="http://cdn.mixpanel.com/libs/mixpanel-2-latest.min.js"></script>
+  <script>mixpanel.init("abcdef1234567890abcdef1234567890");</script>
+
+  <!-- A4: Amplitude analytics — no opt-in required -->
+  <script src="http://cdn.amplitude.com/libs/amplitude-8-latest-min.js"></script>
+  <script>amplitude.getInstance().init("1234567890abcdef");</script>
+
+  <!-- A6: Font loaded over HTTP (not HTTPS) -->
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto">
+</head>
+<body>
+
+  <header>
+    <h1>VulnApp</h1>
+    <!-- B6: No Terms of Service link -->
+    <!-- B1: No Help / Emergency / Crisis link -->
+    <!-- B4: No Report Abuse link -->
+  </header>
+
+  <!--
+    A3: NO cookie consent banner present anywhere in the application.
+    Non-essential cookies (Mixpanel, Amplitude) load before any user interaction.
+  -->
+
+  <!-- A2: Registration form collects PII before showing any consent language -->
+  <!-- A11: POST form has no csrf_token or X-CSRFToken hidden field -->
+  <!-- A5: novalidate disables browser-side validation -->
+  <form method="post" action="/register" novalidate>
+
+    <h2>Create Account</h2>
+    <!-- A2: No consent checkbox, no privacy policy link, no "I agree" language -->
+
+    <label>First Name</label>
+    <!-- A5: no required, no pattern attribute on typed inputs -->
+    <input type="text" name="first_name">
+
+    <label>Email</label>
+    <input type="email" name="email">
+
+    <label>Date of Birth</label>  <!-- A1: DOB collected without justification -->
+    <input type="text" name="dob">
+
+    <label>SSN (Social Security Number)</label>  <!-- A1 CRITICAL -->
+    <input type="text" name="ssn">
+
+    <label>National ID / Aadhaar</label>  <!-- A1 CRITICAL -->
+    <input type="text" name="national_id">
+
+    <label>Biometric Reference (fingerprint hash)</label>  <!-- A1 CRITICAL -->
+    <input type="text" name="biometric">
+
+    <label>Race / Ethnicity</label>  <!-- A1 Art.9 / B3 -->
+    <input type="text" name="race">
+
+    <label>Religion</label>  <!-- A1 Art.9 -->
+    <input type="text" name="religion">
+
+    <label>Health Conditions</label>  <!-- A1 Art.9 -->
+    <textarea name="health_data"></textarea>
+
+    <label>Password</label>
+    <input type="password" name="password">
+
+    <!-- B11: No age gate — no "I confirm I am 18+" checkbox -->
+    <!-- B8: No CAPTCHA / reCAPTCHA / hCaptcha to prevent bot registrations -->
+
+    <button type="submit">Register</button>
+
+    <!--
+      A2: No privacy policy link adjacent to or before form submission.
+      There is no "By registering you agree to our Privacy Policy" text.
+    -->
+  </form>
+
+  <footer>
+    <!-- B6: No Terms of Service or Acceptable Use Policy link -->
+    <!-- A2: No privacy policy footer link -->
+    <p>&copy; 2026 VulnApp. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
