@@ -1,0 +1,27 @@
+# requirements.txt — Intentionally pinned to vulnerable versions for SCA testing
+#
+# SCA-1: Flask 0.10.1 — CVE-2018-1000656 (Denial of Service via crafted JSON)
+#         also lacks SameSite cookie attribute → session fixation risk
+Flask==0.10.1
+
+# SCA-2: Jinja2 2.10.1 — CVE-2019-10906 (sandbox escape, RCE possible)
+#         also CVE-2019-8341 (arbitrary code execution via crafted template)
+Jinja2==2.10.1
+
+# SCA-3: cryptography 2.6.1 — multiple CVEs:
+#         CVE-2023-23931 (memory corruption in Blowfish),
+#         CVE-2020-36242 (buffer overflow in symmetric decrypt),
+#         CVE-2018-10903 (GCM auth tag bypass — broken AEAD)
+cryptography==2.6.1
+
+# Additional dependencies (not specifically flagged but present for realism)
+Werkzeug==0.14.1
+itsdangerous==0.24
+click==6.7
+requests==2.18.0
+Pillow==8.0.0
+SQLAlchemy==1.2.0
+stripe==2.0.0
+sendgrid==6.0.0
+twilio==6.0.0
+flask-sqlalchemy==2.3.0
