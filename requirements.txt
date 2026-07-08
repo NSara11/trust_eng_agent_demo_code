@@ -1,5 +1,5 @@
 # requirements.txt — Intentionally pinned to vulnerable versions for SCA testing
-#
+# this is a sample code file
 # SCA-1: Flask 0.10.1 — CVE-2018-1000656 (Denial of Service via crafted JSON)
 #         also lacks SameSite cookie attribute → session fixation risk
 Flask==0.10.1
